@@ -1,3 +1,4 @@
+from http.client import HTTPException
 from typing import OrderedDict
 
 from fastapi import APIRouter, status
@@ -50,10 +51,6 @@ async def get_books() -> OrderedDict[int, Book]:
 
 @router.get("/{book_id}", response_model=Book, status_code=status.HTTP_200_OK)
 async def get_book(book_id: int) -> Book:
-    """
-    Retrieve a book by its ID.
-    Returns 404 if the book does not exist.
-    """
     book = db.books.get(book_id)
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
