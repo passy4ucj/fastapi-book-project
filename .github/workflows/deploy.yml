@@ -1,82 +1,3 @@
-# name: Deploy FastAPI App
-
-# on:
-#   push:
-#     branches:
-#       - main
-
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout Repository
-#         uses: actions/checkout@v4
-
-#       - name: Set up Docker Buildx
-#         uses: docker/setup-buildx-action@v2
-
-#       - name: Log in to Docker Hub
-#         uses: docker/login-action@v2
-#         with:
-#           username: ${{ secrets.DOCKER_HUB_USERNAME }}
-#           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-
-#       - name: Create .env file for Docker Compose
-#         run: echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> .env
-
-#       - name: Build and Push Docker Image
-#         run: |
-#           docker build -f Dockerfile -t ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi-app:latest .
-#           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi-app:latest
-
-#       - name: Deploy to Server
-#         uses: appleboy/ssh-action@master
-#         with:
-#           host: ${{ secrets.SERVER_HOST }}
-#           username: ${{ secrets.SERVER_USER }}
-#           key: ${{ secrets.SERVER_SSH_KEY }}
-#           script: |
-#             # Ensure necessary dependencies are installed
-#             sudo apt update
-#             sudo apt install -y docker.io
-
-#             # Ensure Docker Compose is installed
-#             if ! [ -x "$(command -v docker-compose)" ]; then
-#               sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-#               sudo chmod +x /usr/local/bin/docker-compose
-#             fi
-
-#             # Ensure the home directory exists before proceeding
-#             mkdir -p ~/fastapi-app
-#             cd ~/fastapi-app || exit 1
-
-#             # If directory exists but isn't a Git repo, remove it and re-clone
-#             if [ ! -d ".git" ]; then
-#               echo "🚀 Cloning the repository..."
-#               rm -rf ~/fastapi-app  # Ensure it's clean
-#               git clone https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME.git ~/fastapi-app
-#               cd ~/fastapi-app || exit 1
-#             else
-#               echo "✅ Repo exists, pulling latest changes..."
-#               git reset --hard
-#               git clean -fd
-#               git pull origin main
-#             fi
-
-#             # Debug: Check if Dockerfile exists
-#             echo "📂 Checking directory contents..."
-#             ls -lah
-
-#             if [ ! -f Dockerfile ]; then
-#               echo "🚨 ERROR: Dockerfile not found! Exiting..."
-#               exit 1
-#             fi
-
-#             # Pull latest image and restart the app
-#             sudo docker-compose down
-#             sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi-app:latest
-#             sudo docker-compose up -d --build
-
 name: Deploy FastAPI App
 
 on:
@@ -91,6 +12,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Create .env file for Docker Compose
+        run: echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> .env
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -f Dockerfile -t ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi-app:latest .
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi-app:latest
+
       - name: Deploy to Server
         uses: appleboy/ssh-action@master
         with:
@@ -98,18 +36,80 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd ~ || exit 1
+            # Ensure necessary dependencies are installed
+            sudo apt update
+            sudo apt install -y docker.io
 
-            if [ -d "fastapi-app" ]; then
-              sudo rm -rf fastapi-app
+            # Ensure Docker Compose is installed
+            if ! [ -x "$(command -v docker-compose)" ]; then
+              sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
             fi
 
-            git clone ${{ secrets.REPO_URL }} fastapi-app
-            cd fastapi-app || exit 1
+            # Ensure the home directory exists before proceeding
+            mkdir -p ~/fastapi-app
+            cd ~/fastapi-app || exit 1
 
-            sudo docker build -t fastapi-app:latest .
+            # If directory exists but isn't a Git repo, remove it and re-clone
+            if [ ! -d ".git" ]; then
+              echo "🚀 Cloning the repository..."
+              rm -rf ~/fastapi-app  # Ensure it's clean
+              git clone https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME.git ~/fastapi-app
+              cd ~/fastapi-app || exit 1
+            else
+              echo "✅ Repo exists, pulling latest changes..."
+              git reset --hard
+              git clean -fd
+              git pull origin main
+            fi
 
-            sudo docker stop fastapi_app || true
-            sudo docker rm fastapi_app || true
+            # Debug: Check if Dockerfile exists
+            echo "📂 Checking directory contents..."
+            ls -lah
 
-            sudo docker run -d --name fastapi_app -p 8000:8000 fastapi-app:latest
+            if [ ! -f Dockerfile ]; then
+              echo "🚨 ERROR: Dockerfile not found! Exiting..."
+              exit 1
+            fi
+
+            # Pull latest image and restart the app
+            sudo docker-compose down
+            sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi-app:latest
+            sudo docker-compose up -d --build
+
+# name: Deploy FastAPI App
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v4
+
+#       - name: Deploy to Server
+#         uses: appleboy/ssh-action@master
+#         with:
+#           host: ${{ secrets.SERVER_HOST }}
+#           username: ${{ secrets.SERVER_USER }}
+#           key: ${{ secrets.SERVER_SSH_KEY }}
+#           script: |
+#             cd ~ || exit 1
+
+#             if [ -d "fastapi-app" ]; then
+#               sudo rm -rf fastapi-app
+#             fi
+
+#             git clone ${{ secrets.REPO_URL }} fastapi-app
+#             cd fastapi-app || exit 1
+
+#             sudo docker build -t fastapi-app:latest .
+
+#             sudo docker stop fastapi_app || true
+#             sudo docker rm fastapi_app || true
+
+#             sudo docker run -d --name fastapi_app -p 8000:8000 fastapi-app:latest
