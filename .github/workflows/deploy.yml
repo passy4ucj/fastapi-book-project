@@ -33,23 +33,28 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            sudo apt update && sudo apt install -y docker.io
-            sudo usermod -aG docker $USER
-            newgrp docker
+            # Update packages and install Docker if missing
+            sudo apt update
+            sudo apt install -y docker.io
 
+            # Ensure Docker is running
+            sudo systemctl start docker
+            sudo systemctl enable docker
+
+            # Install Docker Compose if not installed
             if ! [ -x "$(command -v docker-compose)" ]; then
               sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
               sudo chmod +x /usr/local/bin/docker-compose
             fi
 
-            sudo mkdir -p /home/${{ secrets.SERVER_USER }}/fastapi-app
-            cd /home/${{ secrets.SERVER_USER }}/fastapi-app
+            # Set up project directory
+            sudo mkdir -p ~/fastapi-app
+            cd ~/fastapi-app
 
-            sudo rm -f docker-compose.yml
+            # Remove old docker-compose.yml and create a new one from secrets
             echo '${{ secrets.DOCKER_COMPOSE_FILE }}' | sudo tee docker-compose.yml > /dev/null
 
+            # Pull latest image and restart the app
             sudo docker-compose down
-
             sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi-app:latest
             sudo docker-compose up -d --build
-
