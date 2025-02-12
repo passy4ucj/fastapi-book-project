@@ -21,6 +21,9 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
+      - name: Create .env file for Docker Compose
+        run: echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> .env
+
       - name: Build and Push Docker Image
         run: |
           docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi-app:latest .
