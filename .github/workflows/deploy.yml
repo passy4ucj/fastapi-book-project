@@ -104,6 +104,9 @@ jobs:
               sudo rm -rf fastapi-app
             fi
 
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+
             git clone ${{ secrets.REPO_URL }} fastapi-app
             cd fastapi-app || exit 1
 
