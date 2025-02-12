@@ -26,7 +26,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi-app:latest .
+          docker build -f Dockerfile -t ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi-app:latest .
           docker push ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi-app:latest
 
       - name: Deploy to Server
@@ -54,11 +54,20 @@ jobs:
             sudo mkdir -p ~/fastapi-app
             cd ~/fastapi-app
 
+            # Remove old files
+            sudo rm -rf *
+
             # Remove old docker-compose.yml and create a new one from secrets
             echo '${{ secrets.DOCKER_COMPOSE_FILE }}' | sudo tee docker-compose.yml > /dev/null
 
-            # Check if docker-compose.yml exists
-            ls -lah ~/fastapi-app
+            # Clone latest source code
+            git clone https://github.com/passy4ucj/fastapi-book-project.git .
+
+            # Debugging: Check if Dockerfile exists
+            if [ ! -f Dockerfile ]; then
+              echo "🚨 ERROR: Dockerfile not found!"
+              exit 1
+            fi
 
             # Pull latest image and restart the app
             sudo docker-compose down
