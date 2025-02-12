@@ -1,2 +1,0 @@
-- name: Debug Secrets
-  run: echo "Docker Username: ${{ secrets.DOCKER_HUB_USERNAME }}"
