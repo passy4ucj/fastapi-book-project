@@ -36,40 +36,38 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            # Update packages and install Docker if missing
+            # Ensure necessary dependencies are installed
             sudo apt update
             sudo apt install -y docker.io
 
-            # Ensure Docker is running
-            sudo systemctl start docker
-            sudo systemctl enable docker
-
-            # Install Docker Compose if not installed
+            # Ensure Docker Compose is installed
             if ! [ -x "$(command -v docker-compose)" ]; then
               sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
               sudo chmod +x /usr/local/bin/docker-compose
             fi
 
-            # Set up project directory
-            sudo mkdir -p ~/fastapi-app
-            cd ~/fastapi-app
+            # Navigate to the project directory
+            cd ~/fastapi-app || exit 1
 
-            # Remove old files
-            sudo rm -rf *
-
-            # Remove old docker-compose.yml and create a new one from secrets
-            echo '${{ secrets.DOCKER_COMPOSE_FILE }}' | sudo tee docker-compose.yml > /dev/null
-
-            # Ensure the repo is up-to-date
-            if [ ! -d ".git" ]; then
-              git clone https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME.git .
-            else
+            # Clone or update repo
+            if [ -d ".git" ]; then
+              echo "✅ Repo exists, pulling latest changes..."
+              git reset --hard
+              git clean -fd
               git pull origin main
+            else
+              echo "🚀 Cloning the repository..."
+              rm -rf ~/fastapi-app  # Remove any existing directory
+              git clone https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME.git ~/fastapi-app
+              cd ~/fastapi-app || exit 1
             fi
 
-            # Debugging: Check if Dockerfile exists
+            # Debug: Check if Dockerfile exists
+            echo "📂 Checking directory contents..."
+            ls -lah
+
             if [ ! -f Dockerfile ]; then
-              echo "🚨 ERROR: Dockerfile not found!"
+              echo "🚨 ERROR: Dockerfile not found! Exiting..."
               exit 1
             fi
 
