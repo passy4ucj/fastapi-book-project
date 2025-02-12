@@ -46,20 +46,21 @@ jobs:
               sudo chmod +x /usr/local/bin/docker-compose
             fi
 
-            # Navigate to the project directory
+            # Ensure the home directory exists before proceeding
+            mkdir -p ~/fastapi-app
             cd ~/fastapi-app || exit 1
 
-            # Clone or update repo
-            if [ -d ".git" ]; then
+            # If directory exists but isn't a Git repo, remove it and re-clone
+            if [ ! -d ".git" ]; then
+              echo "🚀 Cloning the repository..."
+              rm -rf ~/fastapi-app  # Ensure it's clean
+              git clone https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME.git ~/fastapi-app
+              cd ~/fastapi-app || exit 1
+            else
               echo "✅ Repo exists, pulling latest changes..."
               git reset --hard
               git clean -fd
               git pull origin main
-            else
-              echo "🚀 Cloning the repository..."
-              rm -rf ~/fastapi-app  # Remove any existing directory
-              git clone https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME.git ~/fastapi-app
-              cd ~/fastapi-app || exit 1
             fi
 
             # Debug: Check if Dockerfile exists
