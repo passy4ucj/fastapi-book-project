@@ -54,6 +54,9 @@ jobs:
             # Remove old docker-compose.yml and create a new one from secrets
             echo '${{ secrets.DOCKER_COMPOSE_FILE }}' | sudo tee docker-compose.yml > /dev/null
 
+            # Check if docker-compose.yml exists
+            ls -lah ~/fastapi-app
+
             # Pull latest image and restart the app
             sudo docker-compose down
             sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi-app:latest
