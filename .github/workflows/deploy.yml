@@ -33,7 +33,17 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd $HOME/fastapi-app || mkdir -p $HOME/fastapi-app && cd $HOME/fastapi-app
+            sudo apt update
+            sudo apt install -y docker.io
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            if [ ! -f /usr/local/bin/docker-compose ]; then
+              sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            fi
+            mkdir -p ~/fastapi-app
+            cd ~/fastapi-app
             docker-compose down
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi-app:latest
             docker-compose up -d --build
+
