@@ -107,9 +107,12 @@ jobs:
             git clone https://github.com/passy4ucj/fastapi-book-project.git fastapi-app
             cd fastapi-app || exit 1
 
-            sudo docker build -t fastapi-app:latest .
+            sudo docker-compose up --build
 
-            sudo docker stop fastapi_app || true
-            sudo docker rm fastapi_app || true
+            # sudo docker build -t fastapi-app:latest .
 
-            sudo docker run -d --name fastapi_app -p 8000:8000 fastapi-app:latest
+            # sudo docker stop fastapi_app || true
+            # sudo docker rm fastapi_app || true
+
+            # sudo docker run -d --name fastapi_app -p 8000:8000 fastapi-app:latest
+
