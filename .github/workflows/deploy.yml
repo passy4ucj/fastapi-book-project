@@ -108,6 +108,8 @@ jobs:
             git clone https://github.com/passy4ucj/fastapi-book-project.git fastapi-app
             cd fastapi-app || exit 1
 
+            sudo snap install docker
+
             sudo docker-compose up -d --build
 
             # sudo docker build -t fastapi-app:latest .
