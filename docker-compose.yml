@@ -1,10 +1,6 @@
 services:
   fastapi:
     build: .
-    # image: ${DOCKER_HUB_USERNAME}/fastapi-app:latest
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
     container_name: fastapi_app
     expose:
       - "8000"
